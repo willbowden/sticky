@@ -1,0 +1,27 @@
+:root {
+  --background-col: bisque;
+  --primary-col: #d5e339;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.notespace {
+  min-height: 100%;
+  min-width: 100%;
+  position: absolute;
+  background-color: var(--background-col);
+}
+
+.note {
+  position: absolute;
+  width: 20em;
+  height: 20em;
+  padding: 2em;
+  background-color: var(--primary-col);
+  box-shadow: rgb(0, 0, 0, 0.6) 0.1em 0.5em;
+}
