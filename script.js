@@ -14,23 +14,46 @@ class Notes {
     let container = document.querySelector(this._containerClass);
     container.addEventListener("mousedown", this.handleDrag.bind(this));
 
+    this.loadState();
     this.populateNotes();
   }
 
   populateNotes() {
+    for (let [id, note] of Object.entries(this.notes)) {
+      this.createNote(id, note);
+    }
+  }
+
+  createNote(id, note) {
     let container = document.querySelector(this._containerClass);
 
-    console.log(container);
+    let noteElem = document.createElement("div");
 
-    for (let [, note] of Object.entries(this.notes)) {
-      let noteElem = document.createElement("div");
-      noteElem.classList.add("note");
-      noteElem.innerHTML = `${note.content}`;
-      noteElem.style.left = note.x + "px";
-      noteElem.style.top = note.y + "px";
+    noteElem.classList.add("note");
+    noteElem.innerHTML = `
+      <textarea class="note-text" id="${id}" name="Note ${id}" placeholder="Type something...">${note.content}</textarea>`;
 
-      container.append(noteElem);
+    noteElem.id = id;
+
+    noteElem.style.left = note.x + "px";
+    noteElem.style.top = note.y + "px";
+
+    noteElem.oninput = (event) => {
+      clearTimeout(this.saveState);
+      this.notes[id].content = event.target.value;
+      setTimeout(this.saveState, 1000);
     }
+
+    container.append(noteElem);
+  }
+
+  loadState() {
+    const notes = JSON.parse(localStorage.getItem("notes"));
+    this.notes = notes;
+  }
+
+  saveState() {
+    localStorage.setItem("notes", JSON.stringify(this.notes));
   }
 
   handleDrag(event) {
@@ -48,6 +71,8 @@ class Notes {
     const onMouseMove = (event) => {
       if (!this._dragging) return;
 
+      event.preventDefault();
+
       target.style.left = event.clientX - offsetX + "px";
       target.style.top = event.clientY - offsetY + "px";
 
@@ -58,12 +83,19 @@ class Notes {
 
       this._dragging = false;
 
+      this.notes[target.id].x = parseInt(target.style.left);
+      this.notes[target.id].y = parseInt(target.style.top);
+
+      this.saveState();
+
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("selectstart", () => false);
     }
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("selectstart", () => false);
   }
 
 }
