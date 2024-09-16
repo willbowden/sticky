@@ -2,13 +2,7 @@ class Notes {
 
   constructor(containerClass) {
     this._containerClass = containerClass;
-    this.notes = {
-      "1": {
-        content: "This is a test note",
-        x: 150,
-        y: 50,
-      }
-    };
+
     this._dragging = false;
 
     let container = document.querySelector(this._containerClass);
@@ -38,10 +32,12 @@ class Notes {
     noteElem.style.left = note.x + "px";
     noteElem.style.top = note.y + "px";
 
+    let timer;
+
     noteElem.oninput = (event) => {
-      clearTimeout(this.saveState);
+      clearTimeout(timer);
       this.notes[id].content = event.target.value;
-      setTimeout(this.saveState, 1000);
+      timer = setTimeout(this.saveState.bind(this), 1000);
     }
 
     container.append(noteElem);
