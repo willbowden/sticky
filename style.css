@@ -1,5 +1,6 @@
 :root {
   --background-col: bisque;
+  --background-dark: rgb(205, 178, 146);
   --primary-col: #d5e339;
 }
 
@@ -34,5 +35,21 @@ html, body {
   background: none;
   outline: none;
   resize: none;
+}
+
+.add-button {
+  background: none;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2em;
+  height: 2em;
+  font-size: 1.5em;
+}
+
+.add-button:hover {
+  background-color: var(--background-dark);
+  cursor: pointer;
 }
 

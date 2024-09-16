@@ -8,17 +8,19 @@ class Notes {
     let container = document.querySelector(this._containerClass);
     container.addEventListener("mousedown", this.handleDrag.bind(this));
 
+    document.querySelector(".add-button").addEventListener("click", this.createNote.bind(this));
+
     this.loadState();
     this.populateNotes();
   }
 
   populateNotes() {
     for (let [id, note] of Object.entries(this.notes)) {
-      this.createNote(id, note);
+      this.renderNote(id, note);
     }
   }
 
-  createNote(id, note) {
+  renderNote(id, note) {
     let container = document.querySelector(this._containerClass);
 
     let noteElem = document.createElement("div");
@@ -43,9 +45,30 @@ class Notes {
     container.append(noteElem);
   }
 
+  createNote() {
+    let id;
+
+    if (Object.keys(this.notes).length <= 0) { id = 1 }
+    else { id = parseInt(Object.keys(this.notes)[-1]) + 1; }
+
+    let note = {
+      content: "",
+      x: parseInt(Math.random() * document.documentElement.clientWidth),
+      y: parseInt(Math.random() * document.documentElement.clientHeight),
+    }
+
+    this.notes[id] = note;
+
+    // Left off here with issue of not all notes saving when creating multiple new ones.
+
+    this.saveState();
+
+    this.renderNote(id, note);
+  }
+
   loadState() {
     const notes = JSON.parse(localStorage.getItem("notes"));
-    this.notes = notes;
+    this.notes = notes ? notes : {};
   }
 
   saveState() {
