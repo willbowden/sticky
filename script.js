@@ -2,8 +2,9 @@ class Notes {
 
   constructor(containerClass) {
     this._containerClass = containerClass;
-
     this._dragging = false;
+    this._saveTimer = undefined;
+
 
     let container = document.querySelector(this._containerClass);
     container.addEventListener("mousedown", this.handleDrag.bind(this));
@@ -34,12 +35,10 @@ class Notes {
     noteElem.style.left = note.x + "px";
     noteElem.style.top = note.y + "px";
 
-    let timer;
-
     noteElem.oninput = (event) => {
-      clearTimeout(timer);
+      clearTimeout(this._saveTimer);
       this.notes[id].content = event.target.value;
-      timer = setTimeout(this.saveState.bind(this), 1000);
+      this._saveTimer = setTimeout(this.saveState.bind(this), 1000);
     }
 
     container.append(noteElem);
@@ -49,7 +48,7 @@ class Notes {
     let id;
 
     if (Object.keys(this.notes).length <= 0) { id = 1 }
-    else { id = parseInt(Object.keys(this.notes)[-1]) + 1; }
+    else { id = parseInt(Object.keys(this.notes).at(-1)) + 1; }
 
     let note = {
       content: "",
@@ -59,9 +58,8 @@ class Notes {
 
     this.notes[id] = note;
 
-    // Left off here with issue of not all notes saving when creating multiple new ones.
-
-    this.saveState();
+    clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(this.saveState.bind(this), 1000);
 
     this.renderNote(id, note);
   }
