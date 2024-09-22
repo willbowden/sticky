@@ -16,6 +16,7 @@ html, body {
   min-width: 100%;
   position: absolute;
   background-color: var(--background-col);
+  overflow: hidden;
 }
 
 .note {
