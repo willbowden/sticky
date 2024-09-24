@@ -56,7 +56,7 @@ class Notes {
     else { id = parseInt(Object.keys(this._notes).at(-1)) + 1; }
 
     const noteWidth = parseInt(getComputedStyle(document.body)["font-size"]) * 20;
-    
+
     let note = {
       content: "",
       x: parseInt(Math.random() * (document.documentElement.clientWidth - noteWidth)),
@@ -75,7 +75,9 @@ class Notes {
     const notes = JSON.parse(localStorage.getItem("notes"));
     const drawingOrder = JSON.parse(localStorage.getItem("drawingOrder"));
     this._notes = notes || {};
-    this._drawingOrder = drawingOrder || (notes && Object.keys(notes)) || [];
+    this._drawingOrder = notes ? (drawingOrder || (notes && Object.keys(notes)) || []) : [];
+
+    this.saveState();
   }
 
   saveState() {
