@@ -2,32 +2,44 @@ class Notes {
 
   constructor(containerClass) {
     this._containerClass = containerClass;
+    this._panning = false;
     this._dragging = false;
     this._saveTimer = undefined;
+    this._offset = undefined;
+    this._zoom = 100;
 
 
     let container = document.querySelector(this._containerClass);
-    container.addEventListener("mousedown", this.handleDrag.bind(this));
+    container.addEventListener("mousedown", this.onMouseDown.bind(this));
+    container.addEventListener("wheel", this.onWheelMove.bind(this));
 
     document.querySelector(".add-button").addEventListener("click", this.createNote.bind(this));
 
     this.loadState();
-    this.populateNotes();
+    this.render();
   }
 
-  populateNotes() {
+  render() {
+    const section = document.querySelector(".notespace");
+    section.innerHTML = "";
+
     if (this._drawingOrder && this._drawingOrder.length > 0) {
       for (let id of this._drawingOrder) {
-        this.renderNote(id, this._notes[id])
+        this.drawNote(id, this._notes[id])
       }
     } else {
       for (let [id, note] of Object.entries(this._notes)) {
-        this.renderNote(id, note);
+        this.drawNote(id, note);
       }
     }
   }
 
-  renderNote(id, note) {
+  get noteWidth() {
+    const defaultWidth = parseInt(getComputedStyle(document.body)["font-size"]) * 20;
+    return defaultWidth * this._zoom / 100;
+  }
+
+  drawNote(id, note) {
     let container = document.querySelector(this._containerClass);
 
     let noteElem = document.createElement("div");
@@ -38,8 +50,13 @@ class Notes {
 
     noteElem.id = id;
 
-    noteElem.style.left = note.x + "px";
-    noteElem.style.top = note.y + "px";
+    noteElem.style.width = this.noteWidth + "px";
+    noteElem.style.height = this.noteWidth + "px";
+    noteElem.style.padding = this.noteWidth / 10;
+
+
+    noteElem.style.left = this._offset.x + note.x + "px";
+    noteElem.style.top = this._offset.y + note.y + "px";
 
     noteElem.oninput = (event) => {
       this._notes[id].content = event.target.value;
@@ -55,12 +72,10 @@ class Notes {
     if (Object.keys(this._notes).length <= 0) { id = 1 }
     else { id = parseInt(Object.keys(this._notes).at(-1)) + 1; }
 
-    const noteWidth = parseInt(getComputedStyle(document.body)["font-size"]) * 20;
-
     let note = {
       content: "",
-      x: parseInt(Math.random() * (document.documentElement.clientWidth - noteWidth)),
-      y: parseInt(Math.random() * (document.documentElement.clientHeight - noteWidth)),
+      x: parseInt(Math.random() * (document.documentElement.clientWidth - this.noteWidth)),
+      y: parseInt(Math.random() * (document.documentElement.clientHeight - this.noteWidth)),
     }
 
     this._notes[id] = note;
@@ -68,14 +83,19 @@ class Notes {
 
     this.saveState();
 
-    this.renderNote(id, note);
+    this.drawNote(id, note);
   }
 
   loadState() {
     const notes = JSON.parse(localStorage.getItem("notes"));
     const drawingOrder = JSON.parse(localStorage.getItem("drawingOrder"));
+    const offset = JSON.parse(localStorage.getItem("offset"))
+    const zoom = JSON.parse(localStorage.getItem("zoom"));
+
     this._notes = notes || {};
     this._drawingOrder = notes ? (drawingOrder || (notes && Object.keys(notes)) || []) : [];
+    this._offset = offset || { x: 0, y: 0 };
+    this._zoom = zoom || 100;
 
     this.saveState();
   }
@@ -86,6 +106,8 @@ class Notes {
     setTimeout(() => {
       localStorage.setItem("notes", JSON.stringify(this._notes));
       localStorage.setItem("drawingOrder", JSON.stringify(this._drawingOrder));
+      localStorage.setItem("offset", JSON.stringify(this._offset));
+      localStorage.setItem("zoom", JSON.stringify(this._zoom));
     }, 50);
   }
 
@@ -96,11 +118,7 @@ class Notes {
   }
 
   handleDrag(event) {
-    if (this._dragging) return;
-
-    let target = event.target.closest("div.note");
-
-    if (!target) return;
+    const target = event.target.closest("div.note");
 
     this._dragging = true;
 
@@ -139,6 +157,66 @@ class Notes {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("selectstart", () => false);
+  }
+
+  handlePan(event) {
+    this._panning = true;
+
+    let offsetX = event.clientX - this._offset.x;
+    let offsetY = event.clientY - this._offset.y;
+
+    const onMouseMove = (event) => {
+      if (!this._panning) return;
+
+      event.preventDefault();
+
+      let newX = event.clientX - offsetX;
+      let newY = event.clientY - offsetY;
+
+      this._offset.x = newX;
+      this._offset.y = newY;
+
+      this.render();
+      this.saveState();
+    }
+
+    const onMouseUp = () => {
+      if (!this._panning) return;
+
+      this._panning = false;
+
+      this.saveState();
+
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    }
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  }
+
+  onMouseDown(event) {
+    if (this._dragging || this._panning) return;
+
+    if (event.target == document.querySelector(".notespace")) {
+      this.handlePan(event);
+    } else {
+      let target = event.target.closest("div.note");
+
+      if (!target) return;
+
+      this.handleDrag(event);
+    }
+  }
+
+  onWheelMove(event) {
+  
+    this._zoom = parseInt(this._zoom + event.deltaY / 10);
+
+    this._zoom = Math.min(Math.max(1, this._zoom), 250);
+
+    this.saveState();
+    this.render();
   }
 
 }
