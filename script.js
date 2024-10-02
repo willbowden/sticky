@@ -52,7 +52,7 @@ class Notes {
 
     noteElem.style.width = this.noteWidth + "px";
     noteElem.style.height = this.noteWidth + "px";
-    noteElem.style.padding = this.noteWidth / 10;
+    noteElem.style.padding = this.noteWidth / 10 + "px";
 
 
     noteElem.style.left = this._offset.x + note.x + "px";
