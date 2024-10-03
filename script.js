@@ -211,12 +211,17 @@ class Notes {
 
   onWheelMove(event) {
   
-    this._zoom = parseInt(this._zoom + event.deltaY / 10);
+    /**
+     * JUST IMPLEMENT FUCKING VIRTUAL COORDINATES FROM
+     * THAT WEBSITE.
+     */
 
-    this._zoom = Math.min(Math.max(1, this._zoom), 250);
+    // this._zoom = parseInt(this._zoom + event.deltaY / 10);
 
-    this.saveState();
-    this.render();
+    // this._zoom = Math.min(Math.max(1, this._zoom), 250);
+
+    // this.saveState();
+    // this.render();
   }
 
 }
